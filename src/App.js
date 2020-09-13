@@ -1,128 +1,114 @@
-import React, { Component } from 'react'
-import Header from "./Components/Footer"
-export class App extends Component {
+import React from 'react';
+import './App.css';
+import BreakInterval from './Components/Breakinterval';
+import SessionLength from './Components/Session';
+import Timer from './Components/Timer';
+
+class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      timer: 1500,
-      break: 300,
-      session: 1500,
-      running: false,
-      grindTime: true,
+      breakLength: 5,
+      sessionLength: 25,
+      timerMinute: 25,
+      isPlay: false,
     };
   }
-  countdownTimer = () => {
-    const { timer, session, grindTime } = this.state;
-    if (timer > 0 && this.state.grindTime === true) {
-      this.setState({
-        timer: timer - 1,
-      });
-    } else if (timer === 0) {
-      this.audio.currentTime = 0;
-      this.audio.play();
-      if (grindTime) {
-        this.setState({
-          grindTime: false,
-          timer: this.state.break,
-        });
-      } else {
-        this.setState({
-          grindTime: true,
-          timer: session,
-        });
-      }
-    }
+
+  onIncreaseBreakLength = () => {
+    this.setState((prevState) => {
+      return {
+        breakLength: prevState.breakLength + 1,
+      };
+    });
   };
 
-  starTimer = () => {
-    if (!this.state.running) {
-      this.intervalID = setInterval(this.countdownTimer, 1000);
+  onDecreaseBreakLength = () => {
+    this.setState((prevState) => {
+      return {
+        breakLength: prevState.breakLength - 1,
+      };
+    });
+  }
+
+  onIncreaseSessionLength = () => {
+    this.setState((prevState) => {
+      return {
+        sessionLength: prevState.sessionLength + 1,
+        timerMinute: prevState.sessionLength + 1,
+      };
+    });
+  }
+
+  onDecreaseSessionLength = () => {
+    this.setState((prevState) => {
+      return {
+        sessionLength: prevState.sessionLength - 1,
+        timerMinute: prevState.sessionLength - 1,
+      };
+    });
+  }
+  onUpdateTimerMinute = () => {
+    this.setState((prevState) => {
+      return {
+        timerMinute: prevState.timerMinute - 1,
+      };
+    });
+  }
+
+  onToggleInterval = (isSession) => {
+    if (isSession) {
+      this.setState({
+        timerMinute: this.state.sessionLength,
+      });
     } else {
-      this.audio.pause();
-      this.audio.currentTime = 0;
-      clearInterval(this.intervalID);
       this.setState({
-        running: false,
+        timerMinute: this.state.breakLength,
       });
     }
-  };
-
-  pauseTimer = () => {
-    clearInterval(this.intervalID);
-    this.setState({
-      running: false,
-    });
-  };
-
-  resetTimer = () => {
-    this.audio.currentTime = 0;
-    this.audio.pause();
-    clearInterval(this.intervalID);
-    this.setState({
-      timer: 1500,
-      break: 300,
-      session: 1500,
-      grindTime: true,
-    });
-  };
-
-  upBreak = () => {
-    if (this.state.break < 3600) {
-      this.setState({
-        break: this.state.break + 60,
-      });
-    }
-  };
-
-  downBreak = () => {
-    if (this.state.break > 1) {
-      this.setState({
-        break: this.state.break - 60,
-      });
-    }
-  };
-
-  upSession = () =>{
-  if(this.state.session <  3600){
-   this.setState({
-     session: this.state.session + 60,
-     timer: this.state.timer + 60
-   })
-  }
   }
 
-  downSession = () => {
-   if(this.state.session > 60){
-     this.setState({
-       session: this.state.session - 60,
-       timer: this.state.timer - 60
-     })
-   }
+  onResetTimer = () => {
+    this.setState({
+      timerMinute: this.state.sessionLength,
+    });
+  }
+
+  onPlayStopTimer = (isPlay) => {
+    this.setState({
+      isPlay: isPlay,
+    });
   }
 
   render() {
     return (
-      <div>
-        <Header />
-        <Clock upBreak={this.upBreak}
-        downBreak={this.downBreak}
-        upSession={this.upSession}
-        downSession={this.downSession}
-        starTimer={this.starTimer}
-        pauseTimer={this.pauseTimer}
-        resetTimer={this.resetTimer}
-        data={this.state}
+      <main>
+        <h2>Pomodoro Clock</h2>
+        <section className="interval-length-container">
+          <BreakInterval
+            isPlay={this.state.isPlay}
+            breakInterval={this.state.breakLength}
+            increaseBreak={this.onIncreaseBreakLength}
+            decreaseBreak={this.onDecreaseBreakLength}
+          />
+          <SessionLength
+            isPlay={this.state.isPlay}
+            sessionLength={this.state.sessionLength}
+            increaseSession={this.onIncreaseSessionLength}
+            decreaseSession={this.onDecreaseSessionLength}
+          />
+        </section>
+        <Timer
+          timerMinute={this.state.timerMinute}
+          breakLength={this.state.breakLength}
+          updateTimerMinute={this.onUpdateTimerMinute}
+          toggleInterval={this.onToggleInterval}
+          resetTimer={this.onResetTimer}
+          onPlayStopTimer={this.onPlayStopTimer}
         />
-        <audio
-          id="beep"
-          ref={(input) => (this.audio = input)}
-          src="http://audio.marsupialgurgle.com/audio/successtrumpet.mp3"
-        />
-        <Footer />
-      </div>
+      </main>
     );
   }
 }
 
-export default App
-
+export default App;
